@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: 'Login to your account',
 };
 
-export function Login() {
+export default function Login() {
   return (
     <section className="flex h-screen items-center justify-center p-4">
       <Link
@@ -47,5 +47,3 @@ export function Login() {
     </section>
   );
 }
-
-export default Login;

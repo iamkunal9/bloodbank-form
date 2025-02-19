@@ -46,6 +46,7 @@ export default function BloodDonationForm() {
   const [donors, setDonors] = useState<string[]>(['']);
   const [editMode, setEditMode] = useState(false);
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const upload = new FileUploadWithPreview('my-unique-id', {
       maxFileCount: 110,
       multiple: true,
