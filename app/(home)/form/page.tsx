@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { FileUploadWithPreview } from 'file-upload-with-preview';
-
 import {
   Form,
   FormControl,
@@ -24,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
 
 const formSchema = z.object({
   supervisorName: z.string().min(2),
@@ -38,25 +38,16 @@ const formSchema = z.object({
   endTime: z.string(),
   startTime: z.string(),
   date: z.date(),
-  photographs: z.any(),
   comments: z.string().optional(),
 });
 
 export default function BloodDonationForm() {
-  const [donors, setDonors] = useState<string[]>(['']);
   const [editMode, setEditMode] = useState(false);
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const upload = new FileUploadWithPreview('my-unique-id', {
-      maxFileCount: 110,
-      multiple: true,
-      text: {
-        browse: 'Choose',
-        chooseFile: 'Take your pick...',
-        label: 'Choose Files to Upload',
-      },
-    });
-  }, []);
+  const [isAlreadySubmitted, setIsAlreadySubmitted] = useState(false);
+  const supabase = createClient();
+  const [upload, setUpload] = useState<FileUploadWithPreview | null>(null);
+  const [upload2, setUpload2] = useState<FileUploadWithPreview | null>(null);
+  
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -73,59 +64,169 @@ export default function BloodDonationForm() {
       bloodBank: "",
       startTime: "",
       comments: "",
+      date: new Date(),
     },
   });
 
+  function checkIsAlreadySubmitted() {
+    fetch('/api/getdata', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then(response => response.json())
+    .then(data => {
+      console.log(data);
+      if (data.length > 0) {
+        setIsAlreadySubmitted(true);
+        form.reset(data[0]);
+      }
+    })
+  }
+  useEffect(() => {
+    const uploadInstance = new FileUploadWithPreview('my-unique-id', {
+      maxFileCount: 110,
+      multiple: true,
+      text: {
+        browse: 'Choose',
+        chooseFile: 'Take your pick...',
+        label: 'Choose Files to Upload',
+      },
+    });
+    
+    const upload2Instance = new FileUploadWithPreview('my-unique-id2', {
+      maxFileCount: 50,
+      multiple: true,
+      text: {
+        browse: 'Choose',
+        chooseFile: 'Take your pick...',
+        label: 'Choose Blood Doner List to Upload',
+      },
+    });
+
+    setUpload(uploadInstance);
+    setUpload2(upload2Instance);
+
+    checkIsAlreadySubmitted();
+  }, []);
+
+  
+
   const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Kolkata', 'Chennai'];
 
-  function addDonor() {
-    setDonors([...donors, '']);
-  }
+  
 
-  function removeDonor(index: number) {
-    const newDonors = donors.filter((_, i) => i !== index);
-    setDonors(newDonors);
-  }
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    
+    const { data: userData, error: authError } = await supabase.auth.getUser();
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // Save to localStorage for edit functionality
-    // localStorage.setItem('bloodDonationForm', JSON.stringify({
-    //   ...values,
-    //   date: format(values.date, 'yyyy-MM-dd'),
-    //   timestamp: new Date().getTime()
-    // }));
-    alert('Form submitted successfully!');
-  }
-
-  // Check for existing data in localStorage
-  if (typeof window !== 'undefined' && !editMode) {
-    const savedData = localStorage.getItem('bloodDonationForm');
-    if (savedData) {
-      const parsedData = JSON.parse(savedData);
-      const submissionTime = new Date(parsedData.timestamp);
-      const currentTime = new Date();
-      const hoursDiff = (currentTime.getTime() - submissionTime.getTime()) / (1000 * 60 * 60);
-      
-      if (hoursDiff < 2) { // 2-hour edit window
-        form.reset({
-          ...parsedData,
-          date: new Date(parsedData.date)
-        });
-        setEditMode(true);
-      } else {
-        localStorage.removeItem('bloodDonationForm');
-      }
+    if (authError || !userData?.user) {
+      alert('Unauthorized');
+      return
     }
+
+    
+
+    const userId = userData.user.id;
+
+    if (isAlreadySubmitted && !editMode) {
+      alert('Form already submitted');
+      return
+    }
+    let data;
+    if (editMode) {
+      const { data:d, error } = await supabase
+      .from('form-results')
+      .update({ supervisor_name: values.supervisorName, mobile_no: values.mobileNo, email: values.email, city: values.city, venue_address: values.venue, coordinator_name: values.coordinatorName, blood_bank_name: values.bloodBank, total_donors: values.totalDonors, total_registrations: values.totalRegistrations, start_time: values.startTime, end_time: values.endTime, event_date: values.date, comments: values.comments, user_id: userId })
+      .eq('user_id', userId)
+      .select('uuid');
+      if (error) {
+        console.error('Error updating data:', error);
+        alert('Failed to update form');
+        return
+      }
+      data = d;
+    }
+    else {
+      const { data:d, error } = await supabase
+      .from('form-results')
+      .insert({ supervisor_name: values.supervisorName, mobile_no: values.mobileNo, email: values.email, city: values.city, venue_address: values.venue, coordinator_name: values.coordinatorName, blood_bank_name: values.bloodBank, total_donors: values.totalDonors, total_registrations: values.totalRegistrations, start_time: values.startTime, end_time: values.endTime, event_date: values.date, comments: values.comments, user_id: userId })
+      .select('uuid');
+    if (error) {
+      console.error('Error inserting data:', error);
+      alert('Failed to submit form');
+      return
+    }
+    data = d;
+    }
+    
+
+
+    const eventImages = upload?.cachedFileArray || [];
+    const bloodDonorList = upload2?.cachedFileArray || [];
+
+    console.log(eventImages);
+    console.log(bloodDonorList);
+
+    for (const file of eventImages) {
+      const fileName = file.name.split(':')[0]; // Get original name without upload ID
+      const fileExtension = fileName.split('.').pop() || 'png'; // Get extension or default to png
+      const randomId = Math.random().toString(36).substring(2, 15);
+      const finalFileName = `${randomId}.${fileExtension}`;
+      const { error } = await supabase
+        .storage
+        .from('event-images')
+        .upload(`${userId}/${data[0].uuid}/${finalFileName}`, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+        if (error) {
+          console.error('Error uploading file:', error);
+        }
+    }
+    for (const file of bloodDonorList) {
+      const fileName = file.name.split(':')[0]; // Get original name without upload ID
+      const fileExtension = fileName.split('.').pop() || 'png'; // Get extension or default to png
+      const randomId = Math.random().toString(36).substring(2, 15);
+      const finalFileName = `${randomId}.${fileExtension}`;
+
+      const { error } = await supabase
+        .storage
+        .from('blood-donor-list')
+        .upload(`${userId}/${data[0].uuid}/${finalFileName}`, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+        if (error) {
+          console.error('Error uploading file:', error);
+        }
+    }
+    checkIsAlreadySubmitted();
+    alert('Form submitted successfully!');
   }
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Blood Donation Event Form</h1>
+      
+        <h1 className="text-2xl font-bold mb-6">Blood Donation Event Form</h1> 
+        
+     
+      <div className="relative">
+      {isAlreadySubmitted && !editMode && (
+          <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center">
+            <Button 
+              onClick={() => setEditMode(true)}
+              className="bg-primary text-black px-6 py-3 rounded-lg shadow-lg hover:bg-primary/90 transition-colors"
+            >
+              Click here to edit
+            </Button>
+          </div>
+        )}
+      
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Supervisor Details */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="supervisorName"
@@ -152,6 +253,10 @@ export default function BloodDonationForm() {
                 </FormItem>
               )}
             />
+            
+          </div>
+
+            <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="email"
@@ -165,10 +270,7 @@ export default function BloodDonationForm() {
                 </FormItem>
               )}
             />
-          </div>
-
-          {/* City Dropdown */}
-          <FormField
+            <FormField
             control={form.control}
             name="city"
             render={({ field }) => (
@@ -190,6 +292,9 @@ export default function BloodDonationForm() {
               </FormItem>
             )}
           />
+            </div>
+          {/* City Dropdown */}
+          
 
           {/* Venue */}
           <FormField
@@ -314,59 +419,11 @@ export default function BloodDonationForm() {
             />
             </div>
           </div>
-
-          {/* Event Photographs */}
-          {/* <FormField
-            control={form.control}
-            name="photographs"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Event Photographs</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="file" 
-                    multiple 
-                    accept="image/*"
-                    onChange={(e) => field.onChange(e.target.files)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
           <div className="custom-file-container" data-upload-id="my-unique-id"></div>
+          <div className="custom-file-container" data-upload-id="my-unique-id2"></div>
 
           {/* Blood Donor List */}
-          <div className="space-y-4">
-            <FormLabel>Blood Donor List</FormLabel>
-            {donors.map((_, index) => (
-              <div key={index} className="flex gap-2">
-                <Input 
-                  placeholder={`Donor ${index + 1} Name`}
-                  value={donors[index]}
-                  onChange={(e) => {
-                    const newDonors = [...donors];
-                    newDonors[index] = e.target.value;
-                    setDonors(newDonors);
-                  }}
-                />
-                <Button 
-                  type="button" 
-                  variant="destructive"
-                  onClick={() => removeDonor(index)}
-                >
-                  Remove
-                </Button>
-              </div>
-            ))}
-            <Button 
-              type="button" 
-              variant="outline"
-              onClick={addDonor}
-            >
-              Add Donor
-            </Button>
-          </div>
+          
 
           {/* Comments */}
           <FormField
@@ -388,10 +445,11 @@ export default function BloodDonationForm() {
           />
 
           <Button type="submit" className="w-full">
-            Submit
+            {editMode?"Update":"Submit"}
           </Button>
         </form>
       </Form>
+    </div>
     </div>
   );
 }
