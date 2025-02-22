@@ -6,6 +6,8 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
+import { ModeToggle } from "@/components/ui/mode-toggle";
+import { Footer, FooterBottom } from "@/components/ui/footer";
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
@@ -27,6 +29,19 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <footer className="w-full bg-background px-4">
+      <div className="mx-auto max-w-container">
+        <Footer className="pt-0">
+          <FooterBottom className="mt-0 flex flex-col items-center gap-4 sm:flex-col md:flex-row">
+            <div>© 2025 Blood Bank Cop. All rights reserved</div>
+            <div className="flex items-center gap-4">
+              <div>Designed, Developed, and Maintained by <a href="https://iamkunal9.github.io/links">iamkunal9</a></div>
+              <ModeToggle />
+            </div>
+          </FooterBottom>
+        </Footer>
+      </div>
+    </footer>
       </body>
     </html>
   );
