@@ -49,7 +49,7 @@ export default function RootLayout({
                 <div className="flex items-center gap-4">
                   <div>
                     Designed, Developed, and Maintained by{" "}
-                    <a href="https://iamkunal9.github.io/links">iamkunal9</a>
+                    <a href="https://iamkunal9.github.io/links" target="_blank">iamkunal9</a>
                   </div>
                   <ModeToggle />
                 </div>
