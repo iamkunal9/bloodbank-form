@@ -15,7 +15,6 @@ import { DonationEventsTable } from "@/components/donation-events-table";
 import { getMonthlyDonors, getTopOverview } from "./actions";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { AdminPanel } from "@/components/admin-panel";
 
 export const metadata: Metadata = {
   title: "Blood Donation Dashboard",
@@ -32,7 +31,7 @@ export default async function DashboardPage() {
 
   const userId = userData.user.id;
   const { data: admins } = await supabase
-    .from("admins")
+    .from("guests")
     .select("*")
     .eq("user_id", userId);
     console.log(admins)
@@ -64,7 +63,6 @@ export default async function DashboardPage() {
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="events">Events</TabsTrigger>
-              <TabsTrigger value="admin">Admin</TabsTrigger>
             </TabsList>
             <TabsContent value="overview" className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -138,9 +136,7 @@ export default async function DashboardPage() {
             <TabsContent value="events" className="space-y-4">
               <DonationEventsTable />
             </TabsContent>
-            <TabsContent value="admin" className="space-y-4">
-              <AdminPanel />
-            </TabsContent>
+            
           </Tabs>
         </div>
       </div>

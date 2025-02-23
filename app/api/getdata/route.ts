@@ -23,13 +23,13 @@ export async function GET() {
   // Transform the data format
   const transformedData = formData.map(item => ({
     supervisorName: item.supervisor_name,
-    mobileNo: item.mobile_no,
+    mobileNo: item.mobile_no.toString(),
     email: item.email,
     city: item.city,
     venue: item.venue_address,
     coordinatorName: item.coordinator_name,
-    totalDonors: item.total_donors,
-    totalRegistrations: item.total_registrations,
+    totalDonors: item.total_donors.toString(),
+    totalRegistrations: item.total_registrations.toString(),
     endTime: item.end_time,
     bloodBank: item.blood_bank_name,
     startTime: item.start_time,

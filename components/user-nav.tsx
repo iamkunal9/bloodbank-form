@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
+  // DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -13,18 +13,35 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { createClient } from "@/utils/supabase/client"
+import { useRouter } from "next/navigation"
+import React from "react"
+import { User } from '@supabase/supabase-js'
 
 export function UserNav() {
+  const router = useRouter();
+  const supabase = createClient();
+  const [userData, setUserData] = React.useState<User | null>(null);
+  React.useEffect(() => {
+    supabase.auth.getUser()
+    .then((data) => {
+      if(data.data.user){
+        setUserData(data.data.user);
+        console.log(data.data.user)
+      }
+    }
+    )
+  }, [supabase.auth]);
   const handleLogout = async () => {
-    const supabase = createClient();
     await supabase.auth.signOut();
+    router.push("/login");
   }
   return (
+    userData && (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/avatars/01.png" alt="@johndoe" />
+            <AvatarImage src={userData?.user_metadata?.avatar_url} alt={userData?.user_metadata?.name} />
             <AvatarFallback>JD</AvatarFallback>
           </Avatar>
         </Button>
@@ -32,12 +49,12 @@ export function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">John Doe</p>
-            <p className="text-xs leading-none text-zinc-500 dark:text-zinc-400">john.doe@example.com</p>
+            <p className="text-sm font-medium leading-none">{userData?.user_metadata?.full_name}</p>
+            <p className="text-xs leading-none text-zinc-500 dark:text-zinc-400">{userData?.email}</p>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
+        {/* <DropdownMenuSeparator /> */}
+        {/* <DropdownMenuGroup>
           <DropdownMenuItem>
             Profile
             <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
@@ -46,14 +63,15 @@ export function UserNav() {
             Settings
             <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
           </DropdownMenuItem>
-        </DropdownMenuGroup>
+        </DropdownMenuGroup> */}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={()=>handleLogout()}>
+        <DropdownMenuItem onClick={()=>handleLogout()} className="cursor-pointer">
           Log out
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+    )
   )
 }
 

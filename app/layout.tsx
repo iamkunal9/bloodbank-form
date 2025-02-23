@@ -5,11 +5,11 @@ const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
-
+import { Toaster } from 'sonner';
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { Footer, FooterBottom } from "@/components/ui/footer";
 import { MainNav } from "@/components/main-nav";
-import { Search } from "@/components/search";
+// import { Search } from "@/components/search";
 import { UserNav } from "@/components/user-nav";
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -35,7 +35,7 @@ export default function RootLayout({
           <div className="flex h-16 items-center px-4">
             <MainNav className="mx-6" />
             <div className="ml-auto flex items-center space-x-4">
-              <Search />
+              {/* <Search /> */}
               <UserNav />
             </div>
           </div>
@@ -57,6 +57,7 @@ export default function RootLayout({
             </Footer>
           </div>
         </footer>
+        <Toaster />
       </body>
     </html>
   );

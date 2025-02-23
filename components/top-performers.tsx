@@ -21,8 +21,8 @@ export async function TopPerformers() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.map((performer) => (
-          <TableRow key={performer.supervisor_name}>
+        {data.map((performer,idx) => (
+          <TableRow key={idx}>
             <TableCell className="font-medium">{performer.supervisor_name}</TableCell>
             <TableCell>{performer.city}</TableCell>
             <TableCell>{performer.total_registrations}</TableCell>

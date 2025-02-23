@@ -220,6 +220,7 @@ export default function BloodDonationForm() {
       }
     }
     checkIsAlreadySubmitted();
+    setEditMode(false);
     alert("Form submitted successfully!");
   }
 
@@ -228,7 +229,7 @@ export default function BloodDonationForm() {
       <h1 className="text-2xl font-bold mb-6">Blood Donation Event Form</h1>
 
       <div className="relative">
-        {isAlreadySubmitted && !editMode && (
+        {/* {isAlreadySubmitted && !editMode && (
           <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center">
             <Button
               onClick={() => setEditMode(true)}
@@ -237,7 +238,7 @@ export default function BloodDonationForm() {
               Click here to edit
             </Button>
           </div>
-        )}
+        )} */}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -465,7 +466,7 @@ export default function BloodDonationForm() {
             />
 
             <Button type="submit" className="w-full">
-              {editMode ? "Update" : "Submit"}
+              Submit
             </Button>
           </form>
         </Form>

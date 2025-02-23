@@ -17,7 +17,44 @@ export async function GET() {
     .select('*')
     .eq('user_id', userId);
   if (!admins || admins.length === 0) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { data: guests } = await supabase
+      .from("guests")
+      .select("*")
+      .eq("user_id", userId);
+    if (!guests || guests.length === 0) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    console.log("This is guests", guests);
+    const cities = guests[0].cities;
+    const { data:formData, error: fetchError } = await supabase
+    .from('form-results')
+    .select('*')
+    .in('city', cities);
+
+  if (fetchError) {
+    return NextResponse.json({ error: fetchError.message }, { status: 500 });
+  }
+
+  // Transform the data format
+  const transformedData = formData.map(item => ({
+    uuid: item.uuid,
+    userId: item.user_id,
+    supervisorName: item.supervisor_name,
+    mobileNo: item.mobile_no,
+    email: item.email,
+    city: item.city,
+    venue: item.venue_address,
+    coordinatorName: item.coordinator_name,
+    totalDonors: item.total_donors,
+    totalRegistrations: item.total_registrations,
+    endTime: item.end_time,
+    bloodBank: item.blood_bank_name,
+    startTime: item.start_time,
+    comments: item.comments,
+    eventDate: item.event_date
+  }));
+  
+  return NextResponse.json(transformedData, { status: 200 });
   }
 
   const { data:formData, error: fetchError } = await supabase
