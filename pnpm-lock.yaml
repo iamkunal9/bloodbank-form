@@ -62,6 +62,12 @@ importers:
       cmdk:
         specifier: 1.0.0
         version: 1.0.0(@types/react-dom@19.0.4(@types/react@19.0.10))(@types/react@19.0.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      embla-carousel-autoplay:
+        specifier: ^8.5.2
+        version: 8.5.2(embla-carousel@8.5.2)
+      embla-carousel-react:
+        specifier: ^8.5.2
+        version: 8.5.2(react@19.0.0)
       file-upload-with-preview:
         specifier: ^6.1.2
         version: 6.1.2
@@ -104,6 +110,9 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.17)
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
       xlsx:
         specifier: ^0.18.5
         version: 0.18.5
@@ -1486,6 +1495,24 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
+  embla-carousel-autoplay@8.5.2:
+    resolution: {integrity: sha512-27emJ0px3q/c0kCHCjwRrEbYcyYUPfGO3g5IBWF1i7714TTzE6L9P81V6PHLoSMAKJ1aHoT2e7YFOsuFKCbyag==}
+    peerDependencies:
+      embla-carousel: 8.5.2
+
+  embla-carousel-react@8.5.2:
+    resolution: {integrity: sha512-Tmx+uY3MqseIGdwp0ScyUuxpBgx5jX1f7od4Cm5mDwg/dptEiTKf9xp6tw0lZN2VA9JbnVMl/aikmbc53c6QFA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.1 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+
+  embla-carousel-reactive-utils@8.5.2:
+    resolution: {integrity: sha512-QC8/hYSK/pEmqEdU1IO5O+XNc/Ptmmq7uCB44vKplgLKhB/l0+yvYx0+Cv0sF6Ena8Srld5vUErZkT+yTahtDg==}
+    peerDependencies:
+      embla-carousel: 8.5.2
+
+  embla-carousel@8.5.2:
+    resolution: {integrity: sha512-xQ9oVLrun/eCG/7ru3R+I5bJ7shsD8fFwLEY7yPe27/+fDHCNj0OT5EoG5ZbFyOxOcG6yTwW8oTz/dWyFnyGpg==}
+
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
 
@@ -2670,6 +2697,10 @@ packages:
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
+
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
 
   victory-vendor@36.9.2:
     resolution: {integrity: sha512-PnpQQMuxlwYdocC8fIJqVXvkeViHYzotI+NJrCuav0ZYFoq912ZHBk3mCeuj+5/VpodOjPe1z0Fk2ihgzlXqjQ==}
@@ -4091,6 +4122,22 @@ snapshots:
       gopd: 1.2.0
 
   eastasianwidth@0.2.0: {}
+
+  embla-carousel-autoplay@8.5.2(embla-carousel@8.5.2):
+    dependencies:
+      embla-carousel: 8.5.2
+
+  embla-carousel-react@8.5.2(react@19.0.0):
+    dependencies:
+      embla-carousel: 8.5.2
+      embla-carousel-reactive-utils: 8.5.2(embla-carousel@8.5.2)
+      react: 19.0.0
+
+  embla-carousel-reactive-utils@8.5.2(embla-carousel@8.5.2):
+    dependencies:
+      embla-carousel: 8.5.2
+
+  embla-carousel@8.5.2: {}
 
   emoji-regex@8.0.0: {}
 
@@ -5517,6 +5564,8 @@ snapshots:
       '@types/react': 19.0.10
 
   util-deprecate@1.0.2: {}
+
+  uuid@11.1.0: {}
 
   victory-vendor@36.9.2:
     dependencies:

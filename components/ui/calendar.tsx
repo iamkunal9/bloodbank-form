@@ -29,8 +29,8 @@ function Calendar({
           buttonVariants({ variant: "outline" }),
           "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
         ),
-        nav_button_previous: "absolute left-1",
-        nav_button_next: "absolute right-1",
+        nav_button_previous: "absolute left-2",
+        nav_button_next: "absolute right-2",
         table: "w-full border-collapse space-y-1",
         head_row: "flex",
         head_cell:
@@ -49,7 +49,7 @@ function Calendar({
         day_range_start: "day-range-start",
         day_range_end: "day-range-end",
         day_selected:
-          "bg-zinc-900 text-zinc-50 hover:bg-zinc-900 hover:text-zinc-50 focus:bg-zinc-900 focus:text-zinc-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-50 dark:hover:text-zinc-900 dark:focus:bg-zinc-50 dark:focus:text-zinc-900",
+          "bg-blue-600 text-white hover:bg-blue-700 focus:bg-blue-700 rounded-md",
         day_today: "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50",
         day_outside:
           "day-outside text-zinc-500 aria-selected:bg-zinc-100/50 aria-selected:text-zinc-500 dark:text-zinc-400 dark:aria-selected:bg-zinc-800/50 dark:aria-selected:text-zinc-400",

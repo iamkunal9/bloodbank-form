@@ -19,5 +19,14 @@ export default async function RootLayout({
   if (data.user == null) {
     return redirect("/login");
   }
-  return <>{children}</>;
+  return <><div className="relative">
+  {/* Background image div */}
+  <div
+    className="absolute md:block hidden inset-0 bg-[url('/bg.png')] bg-cover bg-center opacity-50 z-0" style={{ backgroundSize: "20% auto", backgroundRepeat: "no-repeat" }}
+  ></div>
+  {/* Content div */}
+  <div className="relative z-10">
+    {children}
+  </div>
+</div></>;
 }

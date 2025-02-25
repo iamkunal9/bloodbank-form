@@ -95,7 +95,6 @@ export async function fetchData(table: number): Promise<{
   const supabase = await createClient();
 if (table === 1) {
     const { data, error } = await supabase.from("guests").select("*");
-    console.log("Here",data)
     if (error) {
         return { data: [], error: error.message };
     }
@@ -123,6 +122,13 @@ if (table === 1) {
         email: user.email
     }));
     return { data: users, error: null };
+}
+else if (table === 5) {
+  const { data, error } = await supabase.from('form-results').select('venue_address');
+  if (error) {
+      return { data: [], error: error.message };
+  }
+  return { data: data, error: null };
 }
   return { data: [], error: null };
 }

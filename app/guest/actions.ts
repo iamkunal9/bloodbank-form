@@ -46,7 +46,7 @@ export async function getTopOverview(): Promise<TopOverviewData> {
     const { data: currentMonthData, error: currentError } = await supabase
       .from("form-results")
       .select("total_donors, total_registrations, city, created_at")
-      .in("city", cities)
+      .in("venue_address", cities)
       .gte(
         "created_at",
         `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-01`
@@ -60,7 +60,7 @@ export async function getTopOverview(): Promise<TopOverviewData> {
     const { data: lastMonthData, error: lastError } = await supabase
       .from("form-results")
       .select("total_donors, total_registrations, city, created_at")
-      .in("city", cities)
+      .in("venue_address", cities)
       .gte(
         "created_at",
         `${lastMonthYear}-${(lastMonth + 1).toString().padStart(2, "0")}-01`
@@ -231,7 +231,7 @@ export async function getMonthlyDonors() {
     const { data, error } = await supabase
       .from("form-results")
       .select("total_donors, created_at")
-      .in("city", cities)
+      .in("venue_address", cities)
       .gte("created_at", `${currentYear}-01-01`)
       .lte("created_at", `${currentYear}-12-31`);
 

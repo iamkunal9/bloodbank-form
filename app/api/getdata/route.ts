@@ -1,27 +1,42 @@
 // app/api/files/route.ts
-import { createClient } from '@/utils/supabase/server';
-import { NextResponse } from 'next/server';
+import { createClient } from "@/utils/supabase/server";
+import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   const supabase = await createClient();
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id") || null;
   const { data: userData, error: authError } = await supabase.auth.getUser();
 
   if (authError || !userData?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const userId = userData.user.id;
-  const { data:formData, error: fetchError } = await supabase
-    .from('form-results')
-    .select('*')
-    .eq('user_id', userId);
-
-  if (fetchError) {
-    return NextResponse.json({ error: fetchError.message }, { status: 500 });
+  let formData;
+  if (id) {
+    const { data: d, error: fetchError } = await supabase
+      .from("form-results")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("uuid", id);
+    formData = d;
+    if (fetchError) {
+      return NextResponse.json({ error: fetchError.message }, { status: 500 });
+    }
+  } else {
+    const { data: d, error: fetchError } = await supabase
+      .from("form-results")
+      .select("*")
+      .eq("user_id", userId);
+    formData = d;
+    if (fetchError) {
+      return NextResponse.json({ error: fetchError.message }, { status: 500 });
+    }
   }
-
   // Transform the data format
-  const transformedData = formData.map(item => ({
+  const transformedData = formData?.map((item) => ({
+    uuid: item.uuid,
     supervisorName: item.supervisor_name,
     mobileNo: item.mobile_no.toString(),
     email: item.email,
@@ -34,9 +49,9 @@ export async function GET() {
     bloodBank: item.blood_bank_name,
     startTime: item.start_time,
     comments: item.comments,
-    eventDate: item.event_date
+    eventDate: item.event_date,
   }));
-  
+
   return NextResponse.json(transformedData, { status: 200 });
 }
 

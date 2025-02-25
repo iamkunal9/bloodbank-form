@@ -61,17 +61,28 @@ export function AdminPanel() {
   }
   const [emails, setEmails] = React.useState<EmailData[]>([]);
   const [availableCities, setAvailableCities] = React.useState<string[]>([]);
+  const [availableVenueAddresses, setAvailableVenueAddresses] = React.useState<string[]>([]);
 
   interface CityData {
     city: string;
   }
-
+  interface VenueAddressData {
+    venue_address: string;
+  }
   const fetchCities = async () => {
     const { data: cities, error } = await fetchData(2);
     if (error) {
       return;
     }
     setAvailableCities(((cities as unknown) as CityData[]).map(city => city.city));
+  };
+
+  const fetchVenueAddresses = async () => {
+    const { data: venueAddresses, error } = await fetchData(5);
+    if (error) {
+      return;
+    }
+    setAvailableVenueAddresses(((venueAddresses as unknown) as VenueAddressData[]).map(city => city.venue_address));
   };
   const fetchEmails = async () => {
     console.log("Hereerre");
@@ -99,6 +110,7 @@ export function AdminPanel() {
     fetchCities();
     fetchGuests();
     fetchEmails();
+    fetchVenueAddresses();
   }, []);
 
   const handleAddGuest = async () => {
@@ -147,23 +159,23 @@ export function AdminPanel() {
     toast.success(`${email} has been removed from the guest list.`);
   };
 
-  const handleRemoveCity = async (city: string) => {
-    const resp = await handleCity(city, 1);
-    if (!resp) {
-      toast.error(`Failed to remove ${city} from the list of cities.`);
-      return;
-    }
+  // const handleRemoveCity = async (city: string) => {
+  //   const resp = await handleCity(city, 1);
+  //   if (!resp) {
+  //     toast.error(`Failed to remove ${city} from the list of cities.`);
+  //     return;
+  //   }
 
-    setAvailableCities(availableCities.filter((c) => c !== city));
-    setGuests(
-      guests.map((guest) => ({
-        ...guest,
-        cities: guest.cities.filter((c) => c !== city),
-      }))
-    );
+  //   setAvailableCities(availableCities.filter((c) => c !== city));
+  //   setGuests(
+  //     guests.map((guest) => ({
+  //       ...guest,
+  //       cities: guest.cities.filter((c) => c !== city),
+  //     }))
+  //   );
 
-    toast(`${city} has been removed from the list of cities.`);
-  };
+  //   toast(`${city} has been removed from the list of cities.`);
+  // };
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
@@ -190,7 +202,7 @@ export function AdminPanel() {
               </Select>
             </div>
             <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="guestCities">Cities</Label>
+              <Label htmlFor="guestCities">Venue Address</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start">
@@ -200,17 +212,17 @@ export function AdminPanel() {
                             {city}
                           </Badge>
                         ))
-                      : "Select cities"}
+                      : "Select Venue Address"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[200px] p-0">
                   <Command>
-                    <CommandInput placeholder="Search cities..." />
+                    <CommandInput placeholder="Search Venues..." />
                     <CommandList>
                       <CommandEmpty>No city found.</CommandEmpty>
                       <CommandGroup>
                         <ScrollArea className="h-[200px]">
-                          {availableCities.map((city, idx) => (
+                          {availableVenueAddresses.map((city, idx) => (
                             <CommandItem
                               key={idx}
                               onSelect={() => {
@@ -313,13 +325,13 @@ export function AdminPanel() {
             {availableCities.map((city, idx) => (
               <div key={idx} className="flex justify-between items-center mb-2">
                 <div>{city}</div>
-                <Button
+                {/* <Button
                   variant="destructive"
                   size="sm"
                   onClick={() => handleRemoveCity(city)}
                 >
                   <Trash2 className="h-4 w-4" />
-                </Button>
+                </Button> */}
               </div>
             ))}
           </ScrollArea>
