@@ -58,6 +58,7 @@ export type Event = {
   endTime: string
   comments: string
   uuid: string
+  newsLinks: string
   userId: string
 }
 
@@ -221,6 +222,12 @@ export const columns: ColumnDef<Event>[] = [
                 <Input id="endTime" defaultValue={event.endTime} className="sm:col-span-3" />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+                <label htmlFor="news" className="sm:text-right">
+                  News Links
+                </label>
+                <Input id="news" defaultValue={event.newsLinks} className="sm:col-span-3" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
                 <label htmlFor="comments" className="sm:text-right">
                   Comments
                 </label>
@@ -261,6 +268,22 @@ export const columns: ColumnDef<Event>[] = [
                   </DialogDescription>
                 </DialogHeader>
                 <AllImages uuid={event.uuid} user_id={event.userId} type={'blood-donor-list'} />
+              </DialogContent>
+            </Dialog>
+            <Dialog>
+              <DialogTrigger asChild>
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>View Newspaper Articles</DropdownMenuItem>
+              </DialogTrigger>
+              <DialogContent className="w-[95vw] sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Newspaper Articles</DialogTitle>
+                <DialogDescription>
+                Newspaper Articles from the event in {event.city} on {event.eventDate}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="overflow-y-auto">
+              <AllImages uuid={event.uuid} user_id={event.userId} type={'newspaper-articles'} />
+              </div>
               </DialogContent>
             </Dialog>
           </DropdownMenuContent>

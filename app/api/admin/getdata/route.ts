@@ -51,7 +51,8 @@ export async function GET() {
     bloodBank: item.blood_bank_name,
     startTime: item.start_time,
     comments: item.comments,
-    eventDate: item.event_date
+    eventDate: item.event_date,
+    newsLinks: item.news_links,
   }));
   
   return NextResponse.json(transformedData, { status: 200 });
@@ -81,7 +82,8 @@ export async function GET() {
     bloodBank: item.blood_bank_name,
     startTime: item.start_time,
     comments: item.comments,
-    eventDate: item.event_date
+    eventDate: item.event_date,
+    newsLinks: item.news_links,
   }));
   
   return NextResponse.json(transformedData, { status: 200 });

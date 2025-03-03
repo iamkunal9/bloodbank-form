@@ -44,6 +44,7 @@ const formSchema = z.object({
   startTime: z.string(),
   date: z.date(),
   comments: z.string().optional(),
+  newsLinks: z.string().optional(),
 });
 
 export default function BloodDonationForm() {
@@ -70,6 +71,7 @@ export default function BloodDonationForm() {
   const supabase = createClient();
   const [upload, setUpload] = useState<FileUploadWithPreview | null>(null);
   const [upload2, setUpload2] = useState<FileUploadWithPreview | null>(null);
+  const [upload3, setUpload3] = useState<FileUploadWithPreview | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -86,6 +88,7 @@ export default function BloodDonationForm() {
       bloodBank: "",
       startTime: "",
       comments: "",
+      newsLinks: "",
       date: new Date(),
     },
   });
@@ -133,6 +136,9 @@ export default function BloodDonationForm() {
     const oldContainer2 = document.querySelector(
       '[data-upload-id="my-unique-id2"]'
     );
+    const oldContainer3 = document.querySelector(
+      '[data-upload-id="my-unique-id3"]'
+    );
 
     if (oldContainer) {
       oldContainer.innerHTML = "";
@@ -140,6 +146,10 @@ export default function BloodDonationForm() {
     if (oldContainer2) {
       oldContainer2.innerHTML = "";
     }
+    if (oldContainer3) {
+      oldContainer3.innerHTML = "";
+    }
+    
     const uploadInstance = new FileUploadWithPreview("my-unique-id", {
       maxFileCount: 110,
       multiple: true,
@@ -162,8 +172,20 @@ export default function BloodDonationForm() {
       },
     });
 
+    const upload3Instance = new FileUploadWithPreview("my-unique-id3", {
+      maxFileCount: 20,
+      multiple: true,
+      accept: "application/pdf, image/png, image/jpeg, image/jpg",
+      text: {
+        browse: "Choose",
+        chooseFile: "Take your pick...",
+        label: "Upload Newspaper Articles (PDF/Images)",
+      },
+    });
+
     setUpload(uploadInstance);
     setUpload2(upload2Instance);
+    setUpload3(upload3Instance);
   }, [newform]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -198,6 +220,7 @@ export default function BloodDonationForm() {
           end_time: values.endTime,
           event_date: values.date,
           comments: values.comments,
+          news_links: values.newsLinks,
           user_id: userId,
         })
         .eq("user_id", userId)
@@ -225,6 +248,7 @@ export default function BloodDonationForm() {
           end_time: values.endTime,
           event_date: values.date,
           comments: values.comments,
+          news_links: values.newsLinks,
           user_id: userId,
         })
         .select("uuid");
@@ -238,6 +262,7 @@ export default function BloodDonationForm() {
 
     const eventImages = upload?.cachedFileArray || [];
     const bloodDonorList = upload2?.cachedFileArray || [];
+    const newspaperFiles = upload3?.cachedFileArray || [];
 
     for (const file of eventImages) {
       const fileName = file.name.split(":")[0]; // Get original name without upload ID
@@ -262,6 +287,22 @@ export default function BloodDonationForm() {
 
       const { error } = await supabase.storage
         .from("blood-donor-list")
+        .upload(`${userId}/${data[0].uuid}/${finalFileName}`, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+      if (error) {
+        console.error("Error uploading file:", error);
+      }
+    }
+    for (const file of newspaperFiles) {
+      const fileName = file.name.split(":")[0]; // Get original name without upload ID
+      const fileExtension = fileName.split(".").pop() || "pdf"; // Get extension or default to pdf
+      const randomId = Math.random().toString(36).substring(2, 15);
+      const finalFileName = `${randomId}.${fileExtension}`;
+
+      const { error } = await supabase.storage
+        .from("newspaper-articles")
         .upload(`${userId}/${data[0].uuid}/${finalFileName}`, file, {
           cacheControl: "3600",
           upsert: false,
@@ -364,11 +405,13 @@ export default function BloodDonationForm() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {cities.map((city) => (
+                            {cities
+                              .sort((a, b) => a.city.localeCompare(b.city))
+                              .map((city) => (
                               <SelectItem key={city.id} value={city.city}>
                                 {city.city}
                               </SelectItem>
-                            ))}
+                              ))}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -499,7 +542,7 @@ export default function BloodDonationForm() {
                 </div>
 
                 {/* File Uploads */}
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div
                     className="custom-file-container"
                     data-upload-id="my-unique-id"
@@ -508,6 +551,38 @@ export default function BloodDonationForm() {
                     className="custom-file-container"
                     data-upload-id="my-unique-id2"
                   ></div>
+                  
+                  {/* PR and Media Section */}
+                  <div className="border p-4 rounded-md bg-gray-50">
+                    <h3 className="text-lg font-medium mb-4">PR and Media</h3>
+                    
+                    {/* Newspaper Upload */}
+                    <div className="mb-4">
+                      <div
+                        className="custom-file-container"
+                        data-upload-id="my-unique-id3"
+                      ></div>
+                    </div>
+                    
+                    {/* News Links */}
+                    <FormField
+                      control={form.control}
+                      name="newsLinks"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Online News Links</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Enter comma-separated links to online news articles"
+                              className="resize-none"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
 
                 {/* Comments */}

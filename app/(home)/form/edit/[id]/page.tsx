@@ -12,9 +12,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { ChevronLeft } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { ChevronLeft } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -103,29 +103,35 @@ export default function BloodDonationForm({
 
   useEffect(() => {
     fetchData(2).then((data) => {
-          if (data.error) {
-            console.error("Error fetching data:", data.error)
-            return
-          }
-          const validatedCities = (data.data as Record<string, unknown>[]).map(item => ({
-            id: Number(item.id),
-            city: String(item.city)
-          }))
-          setCities(validatedCities)
+      if (data.error) {
+        console.error("Error fetching data:", data.error);
+        return;
+      }
+      const validatedCities = (data.data as Record<string, unknown>[]).map(
+        (item) => ({
+          id: Number(item.id),
+          city: String(item.city),
         })
+      );
+      setCities(validatedCities);
+    });
 
     checkIsAlreadySubmitted();
   }, [checkIsAlreadySubmitted]);
 
   React.useEffect(() => {
-    const oldContainer = document.querySelector('[data-upload-id="my-unique-id"]')
-    const oldContainer2 = document.querySelector('[data-upload-id="my-unique-id2"]')
-    
+    const oldContainer = document.querySelector(
+      '[data-upload-id="my-unique-id"]'
+    );
+    const oldContainer2 = document.querySelector(
+      '[data-upload-id="my-unique-id2"]'
+    );
+
     if (oldContainer) {
-      oldContainer.innerHTML = ''
+      oldContainer.innerHTML = "";
     }
     if (oldContainer2) {
-      oldContainer2.innerHTML = ''
+      oldContainer2.innerHTML = "";
     }
     const uploadInstance = new FileUploadWithPreview("my-unique-id", {
       maxFileCount: 110,
@@ -150,8 +156,6 @@ export default function BloodDonationForm({
     setUpload(uploadInstance);
     setUpload2(upload2Instance);
   }, []);
-
-  
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const { data: userData, error: authError } = await supabase.auth.getUser();
@@ -267,206 +271,45 @@ export default function BloodDonationForm({
 
   return (
     <>
-    <Link
+      <Link
         href="/form"
         className={cn(
-          buttonVariants({ variant: 'ghost' }),
-          'm-10 left-4 top-4 md:left-8 md:top-8',
-        )}>
+          buttonVariants({ variant: "ghost" }),
+          "m-10 left-4 top-4 md:left-8 md:top-8"
+        )}
+      >
         <>
           <ChevronLeft className="mr-2 size-4" />
           Back
         </>
       </Link>
-    
-    <div className="max-w-2xl mx-auto p-4 sm:p-6">
-      
-      <h1 className="text-2xl font-bold mb-6">Edit Form</h1>
-      
 
-      <div className="relative">
-        {isAlreadySubmitted && !editMode && (
-          <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center">
-            <Button
-              onClick={() => setEditMode(true)}
-              className="bg-primary text-black px-6 py-3 rounded-lg shadow-lg hover:bg-primary/90 transition-colors"
-            >
-              Click here to edit
-            </Button>
-          </div>
-        )}
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Supervisor Details */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="supervisorName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Supervisor Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="mobileNo"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Mobile No</FormLabel>
-                    <FormControl>
-                      <Input placeholder="9876543210" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+      <div className="max-w-2xl mx-auto p-4 sm:p-6">
+        <h1 className="text-2xl font-bold mb-6">Edit Form</h1>
+
+        <div className="relative">
+          {isAlreadySubmitted && !editMode && (
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center">
+              <Button
+                onClick={() => setEditMode(true)}
+                className="bg-primary text-black px-6 py-3 rounded-lg shadow-lg hover:bg-primary/90 transition-colors"
+              >
+                Click here to edit
+              </Button>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="john@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>City</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a city" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {cities.map((city) => (
-                          <SelectItem key={city.id} value={city.city}>
-                            {city.city}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Venue */}
-            <FormField
-              control={form.control}
-              name="venue"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Venue Address</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter full address" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Coordinator and Blood Bank */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="coordinatorName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Coordinator Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Jane Smith" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="bloodBank"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Blood Bank Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="City Blood Bank" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="totalRegistrations"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Total Registrations</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Total Registrations" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="totalDonors"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Total Donors</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Total Donors" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Date and Time */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Event Date</FormLabel>
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      className="rounded-md border w-full sm:w-auto"
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          )}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Supervisor Details */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="startTime"
+                  name="supervisorName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Start Time</FormLabel>
+                      <FormLabel>Supervisor Name</FormLabel>
                       <FormControl>
-                        <Input type="time" {...field} />
+                        <Input placeholder="John Doe" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -474,58 +317,223 @@ export default function BloodDonationForm({
                 />
                 <FormField
                   control={form.control}
-                  name="endTime"
+                  name="mobileNo"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>End Time</FormLabel>
+                      <FormLabel>Mobile No</FormLabel>
                       <FormControl>
-                        <Input type="time" {...field} />
+                        <Input placeholder="9876543210" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-            </div>
 
-            {/* File Uploads */}
-            <div className="space-y-4">
-              <div
-                className="custom-file-container"
-                data-upload-id="my-unique-id"
-              ></div>
-              <div
-                className="custom-file-container"
-                data-upload-id="my-unique-id2"
-              ></div>
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="john@example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>City</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a city" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {cities
+                            .sort((a, b) => a.city.localeCompare(b.city))
+                            .map((city) => (
+                              <SelectItem key={city.id} value={city.city}>
+                                {city.city}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-            {/* Comments */}
-            <FormField
-              control={form.control}
-              name="comments"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Comments</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Any additional comments"
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              {/* Venue */}
+              <FormField
+                control={form.control}
+                name="venue"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Venue Address</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter full address" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <Button type="submit" className="w-full">
-              Submit
-            </Button>
-          </form>
-        </Form>
+              {/* Coordinator and Blood Bank */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="coordinatorName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Coordinator Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Jane Smith" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="bloodBank"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Blood Bank Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="City Blood Bank" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="totalRegistrations"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Total Registrations</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Total Registrations" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="totalDonors"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Total Donors</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Total Donors" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Date and Time */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Event Date</FormLabel>
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        className="rounded-md border w-full sm:w-auto"
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="startTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Start Time</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="endTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>End Time</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* File Uploads */}
+              <div className="space-y-4">
+                <div
+                  className="custom-file-container"
+                  data-upload-id="my-unique-id"
+                ></div>
+                <div
+                  className="custom-file-container"
+                  data-upload-id="my-unique-id2"
+                ></div>
+              </div>
+
+              {/* Comments */}
+              <FormField
+                control={form.control}
+                name="comments"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Comments</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Any additional comments"
+                        className="resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button type="submit" className="w-full">
+                Submit
+              </Button>
+            </form>
+          </Form>
+        </div>
       </div>
-    </div>
     </>
   );
 }

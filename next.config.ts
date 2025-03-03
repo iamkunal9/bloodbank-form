@@ -5,14 +5,14 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "zjbimrlvdlstdqdqvquz.supabase.co",
+        hostname: "auth.lgtcfblood.online",
         port: "",
         pathname: "/storage/v1/object/sign/**", // Updated to match signed URLs
       },
       // Optionally keep the original for public URLs if needed
       {
         protocol: "https",
-        hostname: "zjbimrlvdlstdqdqvquz.supabase.co",
+        hostname: "auth.lgtcfblood.online",
         port: "",
         pathname: "/storage/**",
       },
