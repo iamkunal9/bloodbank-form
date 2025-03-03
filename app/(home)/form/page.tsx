@@ -48,8 +48,6 @@ const formSchema = z.object({
 });
 
 export default function BloodDonationForm() {
-  const [editMode, setEditMode] = useState(false);
-  const [isAlreadySubmitted, setIsAlreadySubmitted] = useState(false);
   const [newform, newForm] = useState(false);
   const router = useRouter();
   interface CityData {
@@ -104,7 +102,6 @@ export default function BloodDonationForm() {
       .then((data) => {
         console.log(data);
         if (data.length > 0) {
-          setIsAlreadySubmitted(true);
           setFilledForms(data);
           // form.reset(data[0])
         }
@@ -198,9 +195,9 @@ export default function BloodDonationForm() {
 
     const userId = userData.user.id;
 
-    let data;
+
     
-      const { data: d, error } = await supabase
+      const { data, error } = await supabase
         .from("form-results")
         .insert({
           supervisor_name: values.supervisorName,
@@ -225,7 +222,7 @@ export default function BloodDonationForm() {
         alert("Failed to submit form");
         return;
       }
-      data = d;
+  
     
 
     const eventImages = upload?.cachedFileArray || [];
@@ -280,7 +277,6 @@ export default function BloodDonationForm() {
       }
     }
     checkIsAlreadySubmitted();
-    setEditMode(false);
     alert("Form submitted successfully!");
   }
 
