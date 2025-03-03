@@ -198,40 +198,8 @@ export default function BloodDonationForm() {
 
     const userId = userData.user.id;
 
-    if (isAlreadySubmitted && !editMode) {
-      alert("Form already submitted");
-      return;
-    }
     let data;
-    if (editMode) {
-      const { data: d, error } = await supabase
-        .from("form-results")
-        .update({
-          supervisor_name: values.supervisorName,
-          mobile_no: values.mobileNo,
-          email: values.email,
-          city: values.city,
-          venue_address: values.venue,
-          coordinator_name: values.coordinatorName,
-          blood_bank_name: values.bloodBank,
-          total_donors: values.totalDonors,
-          total_registrations: values.totalRegistrations,
-          start_time: values.startTime,
-          end_time: values.endTime,
-          event_date: values.date,
-          comments: values.comments,
-          news_links: values.newsLinks,
-          user_id: userId,
-        })
-        .eq("user_id", userId)
-        .select("uuid");
-      if (error) {
-        console.error("Error updating data:", error);
-        alert("Failed to update form");
-        return;
-      }
-      data = d;
-    } else {
+    
       const { data: d, error } = await supabase
         .from("form-results")
         .insert({
@@ -258,7 +226,7 @@ export default function BloodDonationForm() {
         return;
       }
       data = d;
-    }
+    
 
     const eventImages = upload?.cachedFileArray || [];
     const bloodDonorList = upload2?.cachedFileArray || [];
