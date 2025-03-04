@@ -28,6 +28,9 @@ export function UserNav() {
         setUserData(data.data.user);
         console.log(data.data.user)
       }
+      else{
+        router.push('/login');
+      }
     }
     )
   }, [supabase.auth]);
