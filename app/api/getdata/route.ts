@@ -49,8 +49,10 @@ export async function GET(request: Request) {
     bloodBank: item.blood_bank_name,
     startTime: item.start_time,
     comments: item.comments,
-    eventDate: item.event_date,
-    date:item.event_date
+    eventDate: new Date(item.event_date),
+    date: new Date(item.event_date),
+    institute_name: item.institute_name,
+    newsLinks: item.news_links
   }));
 
   return NextResponse.json(transformedData, { status: 200 });

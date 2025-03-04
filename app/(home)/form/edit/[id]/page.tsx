@@ -30,6 +30,7 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
 import React from "react";
 import { fetchData } from "@/app/dashboard/adminactions";
+import { getAllFilesCount } from "./actions";
 const formSchema = z.object({
   supervisorName: z.string().min(2),
   mobileNo: z.string().regex(/^\d{10}$/),
@@ -44,8 +45,14 @@ const formSchema = z.object({
   startTime: z.string(),
   date: z.date(),
   comments: z.string().optional(),
+  newsLinks: z.string().optional(),
+  institute_name: z.string().min(2, "Institute name must be at least 2 characters"),
 });
-
+interface FilesUploaded {
+  eventImages: number;
+  donerListImages: number;
+  prMediaImages: number;
+}
 export default function BloodDonationForm({
   params,
 }: {
@@ -58,6 +65,8 @@ export default function BloodDonationForm({
   const supabase = createClient();
   const [upload, setUpload] = useState<FileUploadWithPreview | null>(null);
   const [upload2, setUpload2] = useState<FileUploadWithPreview | null>(null);
+  const [upload3, setUpload3] = useState<FileUploadWithPreview | null>(null);
+  const [filesCount, setFilesCount] = useState<FilesUploaded | null>(null);
   interface CityData {
     id: number;
     city: string;
@@ -80,6 +89,8 @@ export default function BloodDonationForm({
       bloodBank: "",
       startTime: "",
       comments: "",
+      newsLinks: "",
+      institute_name: "",
       date: new Date(),
     },
   });
@@ -94,27 +105,43 @@ export default function BloodDonationForm({
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
+        getAllFilesCount(id)
+        .then((x)=>{
+          if (x)
+            setFilesCount(x);
+        })
         if (data.length > 0) {
           setIsAlreadySubmitted(true);
-          form.reset(data[0]);
+          const formData = {
+            ...data[0],
+            date: data[0].date ? new Date(data[0].date) : new Date(),
+          };
+          fetchData(2).then((data) => {
+            if (data.error) {
+              console.error("Error fetching data:", data.error);
+              return;
+            }
+            const validatedCities = (data.data as Record<string, unknown>[]).map(
+              (item) => ({
+                id: Number(item.id),
+                city: String(item.city),
+              })
+            );
+            setCities(validatedCities);
+            console.log(validatedCities)
+
+          }).finally(
+            ()=>{
+              console.log("The form will be resetted to ", formData)
+              form.reset(formData);
+            }
+          )
         }
       });
   }, [form, id]);
 
   useEffect(() => {
-    fetchData(2).then((data) => {
-      if (data.error) {
-        console.error("Error fetching data:", data.error);
-        return;
-      }
-      const validatedCities = (data.data as Record<string, unknown>[]).map(
-        (item) => ({
-          id: Number(item.id),
-          city: String(item.city),
-        })
-      );
-      setCities(validatedCities);
-    });
+    
 
     checkIsAlreadySubmitted();
   }, [checkIsAlreadySubmitted]);
@@ -126,6 +153,9 @@ export default function BloodDonationForm({
     const oldContainer2 = document.querySelector(
       '[data-upload-id="my-unique-id2"]'
     );
+    const oldContainer3 = document.querySelector(
+      '[data-upload-id="my-unique-id3"]'
+    );
 
     if (oldContainer) {
       oldContainer.innerHTML = "";
@@ -133,29 +163,47 @@ export default function BloodDonationForm({
     if (oldContainer2) {
       oldContainer2.innerHTML = "";
     }
+    if (oldContainer3) {
+      oldContainer3.innerHTML = "";
+    }
+
     const uploadInstance = new FileUploadWithPreview("my-unique-id", {
       maxFileCount: 110,
       multiple: true,
+      accept: "image/png, image/jpeg, image/jpg",
       text: {
         browse: "Choose",
         chooseFile: "Take your pick...",
-        label: "Choose Files to Upload",
+        label: `Choose Files to Upload (Count: ${filesCount?.eventImages})`,
       },
     });
 
     const upload2Instance = new FileUploadWithPreview("my-unique-id2", {
       maxFileCount: 50,
       multiple: true,
+      accept: "image/png, image/jpeg, image/jpg",
       text: {
         browse: "Choose",
         chooseFile: "Take your pick...",
-        label: "Choose Blood Doner List to Upload",
+        label: `Choose Blood Doner List to Upload (Count: ${filesCount?.donerListImages})`,
+      },
+    });
+
+    const upload3Instance = new FileUploadWithPreview("my-unique-id3", {
+      maxFileCount: 20,
+      multiple: true,
+      accept: "application/pdf, image/png, image/jpeg, image/jpg",
+      text: {
+        browse: "Choose",
+        chooseFile: "Take your pick...",
+        label: `Upload Newspaper Articles (PDF/Images) (Count: ${filesCount?.prMediaImages})`,
       },
     });
 
     setUpload(uploadInstance);
     setUpload2(upload2Instance);
-  }, []);
+    setUpload3(upload3Instance);
+  }, [filesCount]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const { data: userData, error: authError } = await supabase.auth.getUser();
@@ -189,6 +237,8 @@ export default function BloodDonationForm({
           end_time: values.endTime,
           event_date: values.date,
           comments: values.comments,
+          news_links: values.newsLinks,
+          institute_name: values.institute_name,
           user_id: userId,
         })
         .eq("user_id", userId)
@@ -216,6 +266,8 @@ export default function BloodDonationForm({
           end_time: values.endTime,
           event_date: values.date,
           comments: values.comments,
+          news_links: values.newsLinks,
+          institute_name: values.institute_name,
           user_id: userId,
         })
         .select("uuid");
@@ -229,6 +281,7 @@ export default function BloodDonationForm({
 
     const eventImages = upload?.cachedFileArray || [];
     const bloodDonorList = upload2?.cachedFileArray || [];
+    const newspaperFiles = upload3?.cachedFileArray || [];
 
     console.log(eventImages);
     console.log(bloodDonorList);
@@ -256,6 +309,22 @@ export default function BloodDonationForm({
 
       const { error } = await supabase.storage
         .from("blood-donor-list")
+        .upload(`${userId}/${data[0].uuid}/${finalFileName}`, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+      if (error) {
+        console.error("Error uploading file:", error);
+      }
+    }
+    for (const file of newspaperFiles) {
+      const fileName = file.name.split(":")[0]; // Get original name without upload ID
+      const fileExtension = fileName.split(".").pop() || "pdf"; // Get extension or default to pdf
+      const randomId = Math.random().toString(36).substring(2, 15);
+      const finalFileName = `${randomId}.${fileExtension}`;
+
+      const { error } = await supabase.storage
+        .from("newspaper-articles")
         .upload(`${userId}/${data[0].uuid}/${finalFileName}`, file, {
           cacheControl: "3600",
           upsert: false,
@@ -378,6 +447,20 @@ export default function BloodDonationForm({
               {/* Venue */}
               <FormField
                 control={form.control}
+                name="institute_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Institute Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter institute name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="venue"
                 render={({ field }) => (
                   <FormItem>
@@ -497,7 +580,7 @@ export default function BloodDonationForm({
               </div>
 
               {/* File Uploads */}
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div
                   className="custom-file-container"
                   data-upload-id="my-unique-id"
@@ -506,6 +589,38 @@ export default function BloodDonationForm({
                   className="custom-file-container"
                   data-upload-id="my-unique-id2"
                 ></div>
+                
+                {/* PR and Media Section */}
+                <div className="border p-4 rounded-md bg-gray-50">
+                  <h3 className="text-lg font-medium mb-4">PR and Media</h3>
+                  
+                  {/* Newspaper Upload */}
+                  <div className="mb-4">
+                    <div
+                      className="custom-file-container"
+                      data-upload-id="my-unique-id3"
+                    ></div>
+                  </div>
+                  
+                  {/* News Links */}
+                  <FormField
+                    control={form.control}
+                    name="newsLinks"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Online News Links</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Enter comma-separated links to online news articles"
+                            className="resize-none"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
               {/* Comments */}

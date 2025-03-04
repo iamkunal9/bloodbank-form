@@ -26,7 +26,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Edit } from "lucide-react";
+import { Edit, Loader2 } from "lucide-react";
 import { fetchData } from "@/app/dashboard/adminactions";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -45,6 +45,7 @@ const formSchema = z.object({
   date: z.date(),
   comments: z.string().optional(),
   newsLinks: z.string().optional(),
+  institute_name: z.string().min(2, "Institute name must be at least 2 characters"),
 });
 
 export default function BloodDonationForm() {
@@ -62,6 +63,8 @@ export default function BloodDonationForm() {
     supervisorName: string;
     city: string;
     date: string;
+    institute_name: string;
+    venue: string;
     [key: string]: string;
   }
 
@@ -70,6 +73,7 @@ export default function BloodDonationForm() {
   const [upload, setUpload] = useState<FileUploadWithPreview | null>(null);
   const [upload2, setUpload2] = useState<FileUploadWithPreview | null>(null);
   const [upload3, setUpload3] = useState<FileUploadWithPreview | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -87,6 +91,7 @@ export default function BloodDonationForm() {
       startTime: "",
       comments: "",
       newsLinks: "",
+      institute_name: "",
       date: new Date(),
     },
   });
@@ -186,6 +191,8 @@ export default function BloodDonationForm() {
   }, [newform]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setLoading(true)
+    console.log(values)
     const { data: userData, error: authError } = await supabase.auth.getUser();
 
     if (authError || !userData?.user) {
@@ -211,15 +218,17 @@ export default function BloodDonationForm() {
           total_registrations: values.totalRegistrations,
           start_time: values.startTime,
           end_time: values.endTime,
-          event_date: values.date,
+          event_date: new Date(values.date).toDateString(),
           comments: values.comments,
           news_links: values.newsLinks,
+          institute_name: values.institute_name,
           user_id: userId,
         })
         .select("uuid");
       if (error) {
         console.error("Error inserting data:", error);
         alert("Failed to submit form");
+        setLoading(false)
         return;
       }
   
@@ -277,6 +286,7 @@ export default function BloodDonationForm() {
       }
     }
     checkIsAlreadySubmitted();
+    setLoading(false)
     alert("Form submitted successfully!");
   }
 
@@ -385,6 +395,20 @@ export default function BloodDonationForm() {
                 </div>
 
                 {/* Venue */}
+                <FormField
+                  control={form.control}
+                  name="institute_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Institute Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter institute name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="venue"
@@ -568,8 +592,15 @@ export default function BloodDonationForm() {
                   )}
                 />
 
-                <Button type="submit" className="w-full">
-                  Submit
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Please wait
+                    </>
+                  ) : (
+                    "Submit"
+                  )}
                 </Button>
               </form>
             </Form>
@@ -596,10 +627,16 @@ export default function BloodDonationForm() {
                     {filledForm.supervisorName}
                   </h3>
                   <p className="text-sm text-muted-foreground">
+                    {filledForm.institute_name}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {filledForm.venue}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
                     {filledForm.city}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {filledForm.eventDate}
+                    {new Date(filledForm.eventDate).toDateString()}
                   </p>
                 </CardContent>
               </Card>
