@@ -599,7 +599,7 @@ export default function BloodDonationForm() {
                     {filledForm.city}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(filledForm.eventDate).toLocaleDateString()}
+                    {filledForm.eventDate}
                   </p>
                 </CardContent>
               </Card>

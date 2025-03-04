@@ -50,6 +50,7 @@ export async function GET(request: Request) {
     startTime: item.start_time,
     comments: item.comments,
     eventDate: item.event_date,
+    date:item.event_date
   }));
 
   return NextResponse.json(transformedData, { status: 200 });
