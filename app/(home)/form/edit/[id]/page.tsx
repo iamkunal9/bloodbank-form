@@ -242,6 +242,7 @@ export default function BloodDonationForm({
           user_id: userId,
         })
         .eq("user_id", userId)
+        .eq("uuid", id)
         .select("uuid");
       if (error) {
         console.error("Error updating data:", error);
