@@ -1,3 +1,5 @@
+"use server"
+
 import { createClient } from "@/utils/supabase/server";
 export async function getTopOverview(): Promise<TopOverviewData> {
   const supabase = await createClient();
@@ -172,4 +174,29 @@ export async function getMonthlyDonors() {
   });
 
   return monthlyTotals;
+}
+
+export async function deleteEvent(uuid: string): Promise<boolean> {
+  const supabase = await createClient();
+  const { data: userData, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !userData?.user) {
+    return false;
+  }
+
+  const userId = userData.user.id;
+  const { data: admins } = await supabase
+    .from("admins")
+    .select("*")
+    .eq("user_id", userId);
+  if (!admins || admins.length === 0) {
+    return false;
+  }
+
+  const { error } = await supabase
+    .from("form-results")
+    .delete()
+    .eq("uuid", uuid);
+
+  return !error;
 }

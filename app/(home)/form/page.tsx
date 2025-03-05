@@ -201,10 +201,7 @@ export default function BloodDonationForm() {
     }
 
     const userId = userData.user.id;
-
-
-    
-      const { data, error } = await supabase
+    const { data, error } = await supabase
         .from("form-results")
         .insert({
           supervisor_name: values.supervisorName,
