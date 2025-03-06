@@ -1,6 +1,7 @@
 "use client"
 
 import { DialogFooter } from "@/components/ui/dialog"
+import { toast } from "sonner"
 
 import * as React from "react"
 import {
@@ -69,6 +70,7 @@ export function DonationEventsTable() {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
+  const [deletingEvents, setDeletingEvents] = React.useState<Set<string>>(new Set())
 
   // Define columns inside the component to have access to setData
   const columns: ColumnDef<Event>[] = [
@@ -298,23 +300,40 @@ export function DonationEventsTable() {
       enableHiding: false,
       cell: ({ row }) => {
         const event = row.original
+        const isDeleting = deletingEvents.has(event.uuid)
         return (
           <Button 
             variant="ghost" 
             className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground cursor-pointer"
-            onClick={() => {
-              console.log('Delete event:', event.uuid)
-              deleteEvent(event.uuid)
-                .then((x) => {
-                  console.log(x)
-                  // Refresh data after successful deletion
-                  fetch("/api/admin/getdata")
-                    .then((response) => response.json())
-                    .then((data) => setData(data))
+            onClick={async () => {
+              if (isDeleting) return
+              setDeletingEvents(prev => new Set([...prev, event.uuid]))
+              try {
+                const result = await deleteEvent(event.uuid)
+                console.log(result)
+                // Refresh data after successful deletion
+                const response = await fetch("/api/admin/getdata")
+                const newData = await response.json()
+                setData(newData)
+                toast.success("Event deleted successfully")
+              } catch (error) {
+                console.error("Error deleting event:", error)
+                toast.error("Failed to delete event")
+              } finally {
+                setDeletingEvents(prev => {
+                  const newSet = new Set(prev)
+                  newSet.delete(event.uuid)
+                  return newSet
                 })
+              }
             }}
+            disabled={isDeleting}
           >
-            <Trash2 className="h-4 w-4" />
+            {isDeleting ? (
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-800 border-t-transparent dark:border-zinc-100" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
           </Button>
         )
       },
