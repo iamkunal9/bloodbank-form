@@ -36,7 +36,6 @@ export function CitySelect({ onValueChange }: CitySelectProps) {
         <SelectValue placeholder="Select a city" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="mumbai">Mumbai</SelectItem>
         {cities
                               .sort((a, b) => a.city.localeCompare(b.city))
                               .map((city) => (

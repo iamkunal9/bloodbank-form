@@ -41,26 +41,26 @@ export async function getTopOverview(): Promise<TopOverviewData> {
   // Get data for current month
   const { data: currentMonthData, error: currentError } = await supabase
     .from("form-results")
-    .select("total_donors, total_registrations, city, created_at")
+    .select("total_donors, total_registrations, city, event_date")
     .gte(
-      "created_at",
+      "event_date",
       `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-01`
     )
     .lt(
-      "created_at",
+      "event_date",
       `${currentYear}-${(currentMonth + 2).toString().padStart(2, "0")}-01`
     );
 
   // Get data for last month
   const { data: lastMonthData, error: lastError } = await supabase
     .from("form-results")
-    .select("total_donors, total_registrations, city, created_at")
+    .select("total_donors, total_registrations, city, event_date")
     .gte(
-      "created_at",
+      "event_date",
       `${lastMonthYear}-${(lastMonth + 1).toString().padStart(2, "0")}-01`
     )
     .lt(
-      "created_at",
+      "event_date",
       `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-01`
     );
 
@@ -139,9 +139,9 @@ export async function getMonthlyDonors() {
 
   const { data, error } = await supabase
     .from("form-results")
-    .select("total_donors, created_at")
-    .gte("created_at", `${currentYear}-01-01`)
-    .lte("created_at", `${currentYear}-12-31`);
+    .select("total_donors, event_date")
+    .gte("event_date", `${currentYear}-01-01`)
+    .lte("event_date", `${currentYear}-12-31`);
 
   if (error) {
     throw new Error("Failed to fetch monthly donors data");
@@ -163,7 +163,7 @@ export async function getMonthlyDonors() {
   ];
   const monthlyTotals = months.map((name, index) => {
     const monthData = data.filter((item) => {
-      const itemDate = new Date(item.created_at);
+      const itemDate = new Date(item.event_date);
       return itemDate.getMonth() === index;
     });
     const total = monthData.reduce(
