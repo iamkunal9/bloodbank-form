@@ -82,7 +82,9 @@ export function AdminPanel() {
     if (error) {
       return;
     }
-    setAvailableVenueAddresses(((venueAddresses as unknown) as VenueAddressData[]).map(city => city.venue_address));
+    // Use Set to get unique venue addresses
+    const uniqueAddresses = [...new Set(((venueAddresses as unknown) as VenueAddressData[]).map(city => city.venue_address))];
+    setAvailableVenueAddresses(uniqueAddresses);
   };
   const fetchEmails = async () => {
     console.log("Hereerre");
@@ -318,7 +320,7 @@ export function AdminPanel() {
       <Card>
         <CardHeader>
           <CardTitle>Manage Cities</CardTitle>
-          <CardDescription>View and remove cities</CardDescription>
+          <CardDescription>View cities</CardDescription>
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[200px]">
