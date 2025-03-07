@@ -29,7 +29,7 @@ export async function GET() {
     const { data:formData, error: fetchError } = await supabase
     .from('form-results')
     .select('*')
-    .in('city', cities);
+    .in('venue_address', cities);
 
   if (fetchError) {
     return NextResponse.json({ error: fetchError.message }, { status: 500 });

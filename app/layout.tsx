@@ -5,6 +5,7 @@ const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
+import { getUserRole } from "./actions";
 import { Toaster } from 'sonner';
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { Footer, FooterBottom } from "@/components/ui/footer";
@@ -22,11 +23,12 @@ export const metadata: Metadata = {
   description: "Blood Bank",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const userRole = await getUserRole();
   return (
     <html lang="en">
       <body
@@ -37,7 +39,7 @@ export default function RootLayout({
             <MainNav className="md:mx-6" />
             <div className="ml-auto flex items-center space-x-4">
               {/* <Search /> */}
-              <UserNav />
+              <UserNav isAdmin={userRole[0]} isGuest={userRole[1]} />
             </div>
           </div>
         </div>
