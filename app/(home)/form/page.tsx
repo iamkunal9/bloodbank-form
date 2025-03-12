@@ -170,7 +170,7 @@ export default function BloodDonationForm() {
       text: {
         browse: "Choose",
         chooseFile: "Take your pick...",
-        label: "Choose Blood Doner List to Upload",
+        label: "Choose Blood Donor List to Upload",
       },
     });
 
@@ -235,55 +235,68 @@ export default function BloodDonationForm() {
     const bloodDonorList = upload2?.cachedFileArray || [];
     const newspaperFiles = upload3?.cachedFileArray || [];
 
-    for (const file of eventImages) {
-      const fileName = file.name.split(":")[0]; // Get original name without upload ID
-      const fileExtension = fileName.split(".").pop() || "png"; // Get extension or default to png
-      const randomId = Math.random().toString(36).substring(2, 15);
-      const finalFileName = `${randomId}.${fileExtension}`;
-      const { error } = await supabase.storage
-        .from("event-images")
-        .upload(`${userId}/${data[0].uuid}/${finalFileName}`, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-      if (error) {
-        console.error("Error uploading file:", error);
+    // Function to handle a single file upload
+    const uploadFile = async (file: File, bucket: string, userId: string, formId: string) => {
+      try {
+        const fileName = file.name.split(":")[0];
+        const fileExtension = fileName.split(".").pop() || (bucket === "newspaper-articles" ? "pdf" : "png");
+        const randomId = Math.random().toString(36).substring(2, 15);
+        const finalFileName = `${randomId}.${fileExtension}`;
+        
+        const { error } = await supabase.storage
+          .from(bucket)
+          .upload(`${userId}/${formId}/${finalFileName}`, file, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+          
+        if (error) throw error;
+        return { success: true, fileName: finalFileName };
+      } catch (error) {
+        console.error(`Error uploading to ${bucket}:`, error);
+        return { success: false, error, fileName: file.name };
       }
-    }
-    for (const file of bloodDonorList) {
-      const fileName = file.name.split(":")[0]; // Get original name without upload ID
-      const fileExtension = fileName.split(".").pop() || "png"; // Get extension or default to png
-      const randomId = Math.random().toString(36).substring(2, 15);
-      const finalFileName = `${randomId}.${fileExtension}`;
+    };
 
-      const { error } = await supabase.storage
-        .from("blood-donor-list")
-        .upload(`${userId}/${data[0].uuid}/${finalFileName}`, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-      if (error) {
-        console.error("Error uploading file:", error);
+    // Upload files in parallel by category
+    try {
+      // Upload all files in parallel by category
+      const [eventUploads, donorUploads, newspaperUploads] = await Promise.all([
+        // Upload event images in parallel
+        Promise.all(eventImages.map(file => 
+          uploadFile(file, "event-images", userId, data[0].uuid)
+        )),
+        
+        // Upload donor list images in parallel
+        Promise.all(bloodDonorList.map(file => 
+          uploadFile(file, "blood-donor-list", userId, data[0].uuid)
+        )),
+        
+        // Upload newspaper files in parallel
+        Promise.all(newspaperFiles.map(file => 
+          uploadFile(file, "newspaper-articles", userId, data[0].uuid)
+        ))
+      ]);
+      
+      // Count failures
+      const failedUploads = [
+        ...eventUploads.filter(u => !u.success),
+        ...donorUploads.filter(u => !u.success),
+        ...newspaperUploads.filter(u => !u.success)
+      ];
+      
+      if (failedUploads.length > 0) {
+        console.warn(`${failedUploads.length} files failed to upload`);
+        // You could show this in the UI if you want
       }
+      
+    } catch (error) {
+      console.error("Error during parallel file uploads:", error);
+      // Continue with form submission even if some uploads fail
     }
-    for (const file of newspaperFiles) {
-      const fileName = file.name.split(":")[0]; // Get original name without upload ID
-      const fileExtension = fileName.split(".").pop() || "pdf"; // Get extension or default to pdf
-      const randomId = Math.random().toString(36).substring(2, 15);
-      const finalFileName = `${randomId}.${fileExtension}`;
-
-      const { error } = await supabase.storage
-        .from("newspaper-articles")
-        .upload(`${userId}/${data[0].uuid}/${finalFileName}`, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-      if (error) {
-        console.error("Error uploading file:", error);
-      }
-    }
+      
     checkIsAlreadySubmitted();
-    setLoading(false)
+    setLoading(false);
     alert("Form submitted successfully!");
   }
 

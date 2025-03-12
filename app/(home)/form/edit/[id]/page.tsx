@@ -185,7 +185,7 @@ export default function BloodDonationForm({
       text: {
         browse: "Choose",
         chooseFile: "Take your pick...",
-        label: `Choose Blood Doner List to Upload (Count: ${filesCount?.donerListImages})`,
+        label: `Choose Blood Donor List to Upload (Count: ${filesCount?.donerListImages})`,
       },
     });
 
